@@ -1,11 +1,13 @@
 import React, { useState, useRef, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Send, Paperclip, Smile, Zap } from "lucide-react";
+import { Send, Zap } from "lucide-react";
 import { VoiceInput } from "./VoiceInput";
+import { EmojiPicker } from "../ui/EmojiPicker";
+import { FileUpload } from "../ui/FileUpload";
 import { GlassCard } from "../ui/GlassCard";
 
 interface EnhancedChatInputProps {
-  onSendMessage: (message: string) => void;
+  onSendMessage: (message: string, files?: File[]) => void;
   disabled?: boolean;
   placeholder?: string;
 }
@@ -19,6 +21,7 @@ export const EnhancedChatInput: React.FC<EnhancedChatInputProps> = ({
   const [messageHistory, setMessageHistory] = useState<string[]>([]);
   const [historyIndex, setHistoryIndex] = useState(-1);
   const [isFocused, setIsFocused] = useState(false);
+  const [attachedFiles, setAttachedFiles] = useState<File[]>([]);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
   // Auto-resize textarea
@@ -33,13 +36,17 @@ export const EnhancedChatInput: React.FC<EnhancedChatInputProps> = ({
     e.preventDefault();
     const trimmedMessage = message.trim();
 
-    if (trimmedMessage && !disabled) {
-      onSendMessage(trimmedMessage);
+    if ((trimmedMessage || attachedFiles.length > 0) && !disabled) {
+      onSendMessage(trimmedMessage || "📎 Shared files", attachedFiles);
 
-      // Add to history
-      setMessageHistory((prev) => [trimmedMessage, ...prev].slice(0, 50));
+      // Add to history (only text messages)
+      if (trimmedMessage) {
+        setMessageHistory((prev) => [trimmedMessage, ...prev].slice(0, 50));
+      }
+
       setHistoryIndex(-1);
       setMessage("");
+      setAttachedFiles([]);
     }
   };
 
@@ -68,6 +75,17 @@ export const EnhancedChatInput: React.FC<EnhancedChatInputProps> = ({
   const handleVoiceTranscript = (transcript: string) => {
     setMessage((prev) => prev + (prev ? " " : "") + transcript);
     setHistoryIndex(-1);
+  };
+
+  const handleEmojiSelect = (emoji: string) => {
+    setMessage((prev) => prev + emoji);
+    setHistoryIndex(-1);
+    // Focus back to textarea
+    textareaRef.current?.focus();
+  };
+
+  const handleFileSelect = (files: File[]) => {
+    setAttachedFiles(files);
   };
 
   const inputVariants = {
@@ -103,29 +121,17 @@ export const EnhancedChatInput: React.FC<EnhancedChatInputProps> = ({
           >
             {/* Quick Actions */}
             <div className="flex space-x-1">
-              <motion.button
-                type="button"
-                variants={buttonVariants}
-                whileHover="hover"
-                whileTap="tap"
-                disabled
-                className="p-2 text-gray-400 dark:text-gray-500 cursor-not-allowed opacity-50 rounded-lg hover:bg-gray-100/50 dark:hover:bg-gray-700/50 transition-colors"
-                title="File attachments (coming soon)"
-              >
-                <Paperclip className="w-5 h-5" />
-              </motion.button>
+              <FileUpload
+                onFileSelect={handleFileSelect}
+                disabled={disabled}
+                maxFiles={3}
+                maxSizeInMB={5}
+              />
 
-              <motion.button
-                type="button"
-                variants={buttonVariants}
-                whileHover="hover"
-                whileTap="tap"
-                disabled
-                className="p-2 text-gray-400 dark:text-gray-500 cursor-not-allowed opacity-50 rounded-lg hover:bg-gray-100/50 dark:hover:bg-gray-700/50 transition-colors"
-                title="Emojis (coming soon)"
-              >
-                <Smile className="w-5 h-5" />
-              </motion.button>
+              <EmojiPicker
+                onEmojiSelect={handleEmojiSelect}
+                disabled={disabled}
+              />
             </div>
 
             {/* Message input */}
@@ -174,12 +180,14 @@ export const EnhancedChatInput: React.FC<EnhancedChatInputProps> = ({
             {/* Send button */}
             <motion.button
               type="submit"
-              disabled={disabled || !message.trim()}
+              disabled={
+                disabled || (!message.trim() && attachedFiles.length === 0)
+              }
               variants={buttonVariants}
               whileHover="hover"
               whileTap="tap"
               className="p-3 bg-gradient-to-r from-primary-600 to-purple-600 text-white rounded-xl hover:from-primary-700 hover:to-purple-700 focus:outline-none focus:ring-2 focus:ring-primary-500/50 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 shadow-lg hover:shadow-xl"
-              title="Send message (Enter)"
+              title={`Send ${message.trim() ? "message" : attachedFiles.length > 0 ? "files" : "message"} (Enter)`}
             >
               <Send className="w-5 h-5" />
             </motion.button>
@@ -188,15 +196,27 @@ export const EnhancedChatInput: React.FC<EnhancedChatInputProps> = ({
 
         {/* Message history hint */}
         <AnimatePresence>
-          {messageHistory.length > 0 && isFocused && (
+          {((messageHistory.length > 0 && isFocused) ||
+            attachedFiles.length > 0) && (
             <motion.div
               initial={{ opacity: 0, y: 5 }}
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: 5 }}
               className="mt-2 text-xs text-gray-500 dark:text-gray-400 text-center font-medium"
             >
-              Use ↑↓ arrow keys to navigate message history •{" "}
-              {messageHistory.length} messages saved
+              {attachedFiles.length > 0 && (
+                <span className="text-primary-600 dark:text-primary-400">
+                  {attachedFiles.length} file
+                  {attachedFiles.length > 1 ? "s" : ""} attached
+                  {messageHistory.length > 0 && isFocused && " • "}
+                </span>
+              )}
+              {messageHistory.length > 0 && isFocused && (
+                <span>
+                  Use ↑↓ arrow keys to navigate message history •{" "}
+                  {messageHistory.length} messages saved
+                </span>
+              )}
             </motion.div>
           )}
         </AnimatePresence>

@@ -60,11 +60,21 @@ export default function Chat() {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
 
-  const handleSendMessage = async (content: string) => {
+  const handleSendMessage = async (content: string, files?: File[]) => {
     // Add user message
+    let messageContent = content;
+
+    // If files are attached, add file info to message
+    if (files && files.length > 0) {
+      const fileNames = files.map((file) => file.name).join(", ");
+      messageContent = content
+        ? `${content}\n\n📎 Attached: ${fileNames}`
+        : `📎 Shared ${files.length} file${files.length > 1 ? "s" : ""}: ${fileNames}`;
+    }
+
     const userMessage: ChatMessageType = {
       id: generateMessageId(),
-      content,
+      content: messageContent,
       sender: "user",
       timestamp: new Date(),
     };
@@ -73,8 +83,13 @@ export default function Chat() {
     setIsLoading(true);
 
     try {
-      // Get bot response
-      const botResponse = await sendMessageToBot(content);
+      // Get bot response, including file acknowledgment
+      let botPrompt = content;
+      if (files && files.length > 0) {
+        botPrompt = `User shared ${files.length} file(s): ${files.map((f) => f.name).join(", ")}. ${content || "Please acknowledge the files."}`;
+      }
+
+      const botResponse = await sendMessageToBot(botPrompt);
 
       const botMessageId = generateMessageId();
       const botMessage: ChatMessageType = {
