@@ -297,12 +297,11 @@ export default function Chat() {
                 isNew={newMessageId === message.id}
               />
             ))}
-          </AnimatePresence>
 
-          {/* Loading indicator */}
-          <AnimatePresence>
+            {/* Loading indicator */}
             {isLoading && (
               <EnhancedLoading
+                key="loading"
                 variant="thinking"
                 message="Thinking carefully..."
               />

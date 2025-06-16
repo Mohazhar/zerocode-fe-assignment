@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, forwardRef } from "react";
 import { motion } from "framer-motion";
 import { ChatMessage as ChatMessageType } from "../../utils/chatApi";
 import { Bot, User, Copy, Check } from "lucide-react";
@@ -9,10 +9,10 @@ interface EnhancedChatMessageProps {
   isNew?: boolean;
 }
 
-export const EnhancedChatMessage: React.FC<EnhancedChatMessageProps> = ({
-  message,
-  isNew = false,
-}) => {
+export const EnhancedChatMessage = forwardRef<
+  HTMLDivElement,
+  EnhancedChatMessageProps
+>(({ message, isNew = false }, ref) => {
   const [copied, setCopied] = useState(false);
   const isBot = message.sender === "bot";
 
@@ -67,10 +67,13 @@ export const EnhancedChatMessage: React.FC<EnhancedChatMessageProps> = ({
 
   return (
     <motion.div
+      ref={ref}
       variants={messageVariants}
       initial="initial"
       animate="animate"
+      exit="initial"
       whileHover="hover"
+      layout
       className={`flex w-full ${isBot ? "justify-start" : "justify-end"} mb-6 group`}
     >
       <div
@@ -159,4 +162,6 @@ export const EnhancedChatMessage: React.FC<EnhancedChatMessageProps> = ({
       </div>
     </motion.div>
   );
-};
+});
+
+EnhancedChatMessage.displayName = "EnhancedChatMessage";
