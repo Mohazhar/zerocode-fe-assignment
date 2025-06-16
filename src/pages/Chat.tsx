@@ -1,4 +1,5 @@
 import React, { useState, useRef, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import {
   ChatMessage as ChatMessageType,
@@ -31,6 +32,7 @@ import { Alert, AlertDescription } from "../components/ui/alert";
 
 export default function Chat() {
   const { user, signOut } = useAuth();
+  const navigate = useNavigate();
   const [messages, setMessages] = useState<ChatMessageType[]>([
     {
       id: generateMessageId(),
@@ -112,7 +114,12 @@ export default function Chat() {
 
   const handleSignOut = async () => {
     if (window.confirm("Are you sure you want to sign out?")) {
-      await signOut();
+      const { error } = await signOut();
+      if (!error) {
+        navigate("/login", { replace: true });
+      } else {
+        console.error("Error signing out:", error);
+      }
     }
   };
 
