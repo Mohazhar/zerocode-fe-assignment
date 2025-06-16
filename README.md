@@ -6,7 +6,7 @@ A modern, production-ready chatbot web application built with React, TypeScript,
 
 **Deployed URL**: [https://zerocode-fe-assignment-5vc1hoglm-mohazhars-projects.vercel.app/](https://zerocode-fe-assignment-5vc1hoglm-mohazhars-projects.vercel.app/)
 
-**GitHub Repository**: [https://github.com/mohazhar/zerocode-fe-assignment](https://zerocode-fe-assignment-5vc1hoglm-mohazhars-projects.vercel.app/)
+**GitHub Repository**: [https://github.com/mohazhar/zerocode-fe-assignment](https://github.com/mohazhar/zerocode-fe-assignment)
 
 ## ✨ Features
 
