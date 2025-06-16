@@ -45,10 +45,25 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
     // Listen for auth changes
     const {
       data: { subscription },
-    } = supabase.auth.onAuthStateChange((_event, session) => {
+    } = supabase.auth.onAuthStateChange((event, session) => {
+      console.log(
+        "Auth state change:",
+        event,
+        session?.user?.email || "no user",
+      );
+
       setSession(session);
       setUser(session?.user ?? null);
       setLoading(false);
+
+      // Handle specific events
+      if (event === "SIGNED_OUT" || event === "TOKEN_REFRESHED") {
+        // Ensure clean state on signout or token refresh failures
+        if (!session) {
+          setUser(null);
+          setSession(null);
+        }
+      }
     });
 
     return () => subscription.unsubscribe();
@@ -71,13 +86,40 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
   };
 
   const signOut = async () => {
-    const { error } = await supabase.auth.signOut();
-    if (!error) {
-      // Clear local state immediately
+    try {
+      // Check if there's a session to sign out from
+      const {
+        data: { session: currentSession },
+      } = await supabase.auth.getSession();
+
+      if (!currentSession) {
+        // No session exists, just clear local state
+        setUser(null);
+        setSession(null);
+        return { error: null };
+      }
+
+      // Attempt to sign out
+      const { error } = await supabase.auth.signOut();
+
+      // Always clear local state regardless of API response
       setUser(null);
       setSession(null);
+
+      return { error };
+    } catch (err) {
+      // If signout fails, still clear local state
+      setUser(null);
+      setSession(null);
+
+      // Return a simplified error for the UI
+      return {
+        error: {
+          message: "Signed out locally due to session error",
+          __isAuthError: true,
+        } as any,
+      };
     }
-    return { error };
   };
 
   const value = {

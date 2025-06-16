@@ -5,6 +5,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { AuthProvider } from "./context/AuthContext";
 import { ProtectedRoute } from "./components/ProtectedRoute";
+import { AuthErrorBoundary } from "./components/AuthErrorBoundary";
 import Login from "./pages/Login";
 import Register from "./pages/Register";
 import Chat from "./pages/Chat";
@@ -25,9 +26,11 @@ const App = () => (
             <Route
               path="/chat"
               element={
-                <ProtectedRoute>
-                  <Chat />
-                </ProtectedRoute>
+                <AuthErrorBoundary>
+                  <ProtectedRoute>
+                    <Chat />
+                  </ProtectedRoute>
+                </AuthErrorBoundary>
               }
             />
             <Route path="/" element={<Login />} />

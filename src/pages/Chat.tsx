@@ -114,11 +114,23 @@ export default function Chat() {
 
   const handleSignOut = async () => {
     if (window.confirm("Are you sure you want to sign out?")) {
-      const { error } = await signOut();
-      if (!error) {
+      try {
+        const { error } = await signOut();
+
+        // Always navigate to login, even if there was an error
+        // (since local state is cleared regardless)
         navigate("/login", { replace: true });
-      } else {
-        console.error("Error signing out:", error);
+
+        if (
+          error &&
+          error.message !== "Signed out locally due to session error"
+        ) {
+          console.warn("Signout completed with warning:", error.message);
+        }
+      } catch (err) {
+        // Fallback: navigate to login even if signout completely fails
+        console.error("Signout error:", err);
+        navigate("/login", { replace: true });
       }
     }
   };
