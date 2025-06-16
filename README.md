@@ -4,9 +4,9 @@ A modern, production-ready chatbot web application built with React, TypeScript,
 
 ## 🚀 Live Demo
 
-**Deployed URL**: [https://your-chatbot-app.vercel.app](https://your-chatbot-app.vercel.app)
+**Deployed URL**: [https://your-chatbot-app.vercel.app](https://zerocode-fe-assignment-5vc1hoglm-mohazhars-projects.vercel.app/)
 
-**GitHub Repository**: [https://github.com/your-handle/zerocode-fe-assignment](https://github.com/your-handle/zerocode-fe-assignment)
+**GitHub Repository**: [https://github.com/your-handle/zerocode-fe-assignment](https://github.com/mohazhar/zerocode-fe-assignment)
 
 ## ✨ Features
 
